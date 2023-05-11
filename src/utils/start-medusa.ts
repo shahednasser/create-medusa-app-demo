@@ -7,7 +7,7 @@ type StartOptions = {
 export default ({
   directory
 }: StartOptions) => {
-  const childProcess = exec('npx @medusajs/medusa-cli develop -y', {
+  const childProcess = exec('npx -y @medusajs/medusa-cli develop', {
     cwd: directory
   })
 

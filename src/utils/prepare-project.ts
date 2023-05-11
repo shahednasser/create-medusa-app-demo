@@ -53,7 +53,7 @@ export default async ({
     }
 
     // run migrations
-    await promiseExec('npx @medusajs/medusa-cli migrations run -y', execOptions)
+    await promiseExec('npx -y @medusajs/medusa-cli migrations run', execOptions)
 
     console.log(
       chalk.green(`\n✓ Ran Migrations`)
@@ -65,7 +65,7 @@ export default async ({
         spinner.text = chalk.white('Creating an admin user...')
       }
 
-      await promiseExec(`npx @medusajs/medusa-cli user -e ${admin.email} -p ${admin.password} -y`, execOptions)
+      await promiseExec(`npx -y @medusajs/medusa-cli user -e ${admin.email} -p ${admin.password}`, execOptions)
 
       console.log(
         chalk.green(`\n✓ Created admin user`)
