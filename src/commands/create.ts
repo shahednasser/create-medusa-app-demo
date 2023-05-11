@@ -41,8 +41,8 @@ export default async () => {
           value: 'local'
         },
         {
-          name: 'Setup Vercel Postgres',
-          value: 'remote'
+          name: 'Setup Vercel Postgres (TODO)',
+          value: 'local'
         }
       ]
     }
