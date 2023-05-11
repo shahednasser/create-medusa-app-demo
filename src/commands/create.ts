@@ -12,6 +12,8 @@ import waitOn from 'wait-on'
 import formatConnectionString from '../utils/format-connection-string.js';
 import ora from 'ora';
 import { program } from 'commander';
+import fs from "fs"
+import { nanoid } from 'nanoid'
 
 const slugify = slugifyType.default
 
@@ -24,6 +26,9 @@ export default async () => {
       default: 'my-medusa-store',
       filter: (input) => {
         return slugify(input)
+      },
+      validate: (input) => {
+        return fs.existsSync(input) ? "A directory already exists with the same name. Please enter a different project name." : true
       }
     },
     {
@@ -61,7 +66,8 @@ export default async () => {
         {
           type: 'input',
           name: 'postgresUsername',
-          message: "Enter your Postgres Username"
+          message: "Enter your Postgres Username",
+          default: 'postgres'
         },
         {
           type: 'password',
@@ -126,21 +132,22 @@ export default async () => {
 
   if (client) {
     spinner.text = chalk.white('Creating database...')
+    const dbName = `medusa-${nanoid(4)}`
     // create postgres database
     await createDb({
       client,
-      db: projectName
+      db: dbName
     })
     // format connection string
     dbConnectionString = formatConnectionString({
       user: postgresUsername,
       password: postgresPassword,
       host: client.host,
-      db: projectName
+      db: dbName
     })
 
     console.log(
-      chalk.green(`\n✓ Database ${projectName} created`)
+      chalk.green(`\n✓ Database ${dbName} created`)
     )
   }
 

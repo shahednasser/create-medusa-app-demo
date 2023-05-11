@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import { program } from "commander"
-import fs from "fs";
+import fs from "fs"
 import path from "path"
 import { Ora } from "ora";
 import promiseExec from "./promise-exec.js";
