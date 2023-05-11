@@ -105,6 +105,7 @@ export default async () => {
       type: 'input',
       name: 'adminEmail',
       message: "Enter your admin email",
+      default: 'admin@medusa-test.com',
       validate: (input) => {
         // TODO add email validation
         return typeof input === 'string' && input.length > 0
@@ -116,7 +117,8 @@ export default async () => {
       message: 'Enter your admin Password',
       validate: (input) => {
         return typeof input === 'string' && input.length > 0
-      }
+      },
+      default: 'supersecret'
     }
   ])
 
