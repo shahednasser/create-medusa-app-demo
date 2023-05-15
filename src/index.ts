@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-import { program } from 'commander'
-import create from './commands/create.js'
+import { program } from "commander"
+import create from "./commands/create.js"
 
 program
-  .description('Create a new Medusa project')
+  .description("Create a new Medusa project")
+  .option("--repo-url <url>", "URL of repository to use to setup project.")
   .parse()
 
-create()
+create(program.opts())

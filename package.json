@@ -11,7 +11,7 @@
     "build": "rm -rf dist && tsc",
     "dev": "npm run build && npm start",
     "prepublish": "npm run build",
-    "lint": "eslint src",
+    "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts"
   },
   "dependencies": {
@@ -23,6 +23,7 @@
     "ora": "^6.3.0",
     "pg": "^8.10.0",
     "slugify": "^1.6.6",
+    "validator": "^13.9.0",
     "wait-on": "^7.0.1"
   },
   "devDependencies": {
@@ -30,10 +31,14 @@
     "@types/commander": "^2.12.2",
     "@types/inquirer": "^9.0.3",
     "@types/pg": "^8.6.6",
+    "@types/validator": "^13.7.17",
     "@types/wait-on": "^5.3.1",
     "@typescript-eslint/eslint-plugin": "^5.59.5",
     "@typescript-eslint/parser": "^5.59.5",
     "eslint": "^8.40.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.8",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"

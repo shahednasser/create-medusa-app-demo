@@ -1,9 +1,11 @@
 import chalk from "chalk"
-import { program } from "commander"
 import fs from "fs"
 import path from "path"
-import { Ora } from "ora";
-import promiseExec from "./promise-exec.js";
+import { Ora } from "ora"
+import promiseExec from "./promise-exec.js"
+import { EOL } from "os"
+import runProcess from "./run-process.js"
+import logMessage from "./log-message.js"
 
 type PrepareOptions = {
   directory: string
@@ -19,61 +21,78 @@ export default async ({
   directory,
   dbConnectionString,
   admin,
-  spinner
+  spinner,
 }: PrepareOptions) => {
-  try {
-    // initialize execution options
-    const execOptions = {
-      cwd: directory
-    }
-  
-    // add connection string to project
-    fs.appendFileSync(path.join(directory, `.env`), `DATABASE_TYPE=postgres\nDATABASE_URL=${dbConnectionString}`)
+  // initialize execution options
+  const execOptions = {
+    cwd: directory,
+  }
 
-    if (spinner) {
-      spinner.text = chalk.white('Installing dependencies...')
-    }
-  
-    // install dependencies
-    // use yarn if available since it's faster
-    try {
-      await promiseExec(`yarn`, execOptions)
-    } catch (e) {
-      // yarn isn't available
-      // use npm
-      await promiseExec(`npm install`, execOptions)
-    }
+  // add connection string to project
+  fs.appendFileSync(
+    path.join(directory, `.env`),
+    `DATABASE_TYPE=postgres${EOL}DATABASE_URL=${dbConnectionString}`
+  )
 
-    console.log(
-      chalk.green(`\n✓ Installed Dependencies`)
-    )
+  if (spinner) {
+    spinner.text = chalk.white("Installing dependencies...")
+  }
 
-    if (spinner) {
-      spinner.text = chalk.white('Running Migrations...')
-    }
-
-    // run migrations
-    await promiseExec('npx -y @medusajs/medusa-cli migrations run', execOptions)
-
-    console.log(
-      chalk.green(`\n✓ Ran Migrations`)
-    )
-
-    if (admin) {
-      // create admin user
-      if (spinner) {
-        spinner.text = chalk.white('Creating an admin user...')
+  await runProcess({
+    process: async () => {
+      try {
+        await promiseExec(`yarn`, execOptions)
+      } catch (e) {
+        // yarn isn't available
+        // use npm
+        await promiseExec(`npm install`, execOptions)
       }
+    },
+    ignoreERESOLVE: true,
+  })
 
-      await promiseExec(`npx -y @medusajs/medusa-cli user -e ${admin.email} -p ${admin.password}`, execOptions)
+  logMessage({
+    message: `\n✓ Installed Dependencies`,
+    type: "success",
+  })
 
-      console.log(
-        chalk.green(`\n✓ Created admin user`)
+  if (spinner) {
+    spinner.text = chalk.white("Running Migrations...")
+  }
+
+  // run migrations
+  await runProcess({
+    process: async () => {
+      await promiseExec(
+        "npx -y @medusajs/medusa-cli@latest migrations run",
+        execOptions
       )
+    },
+  })
+
+  logMessage({
+    message: `\n✓ Ran Migrations`,
+    type: "success",
+  })
+
+  if (admin) {
+    // create admin user
+    if (spinner) {
+      spinner.text = chalk.white("Creating an admin user...")
     }
-  } catch (e) {
-    program.error(
-      chalk.bold.red(`An error occurred while preparing project: ${e}`)
-    )
+
+    await runProcess({
+      process: async () => {
+        await promiseExec(
+          `npx -y @medusajs/medusa-cli@latest user -e ${admin.email} -p ${admin.password}`,
+          execOptions
+        )
+      },
+    })
+
+    logMessage({
+      message: `\n✓ Created admin user`,
+      type: "success",
+    })
   }
 }

@@ -5,12 +5,7 @@ type ConnectionStringOptions = {
   db: string
 }
 
-export default ({
-  user,
-  password,
-  host,
-  db
-}: ConnectionStringOptions) => {
+export default ({ user, password, host, db }: ConnectionStringOptions) => {
   let connection = `postgres://`
   if (user) {
     connection += user
@@ -21,7 +16,7 @@ export default ({
   }
 
   if (user || password) {
-    connection += '@'
+    connection += "@"
   }
 
   connection += `${host}/${db}`

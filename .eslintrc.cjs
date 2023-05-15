@@ -1,10 +1,10 @@
 module.exports = {
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  extends: ['eslint:recommended', "google", "plugin:prettier/recommended"],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'prettier'],
   root: true,
   rules: {
-    semi: 'off',
+    semi: ["error", "never"],
     "max-len": [
       "error",
       {
@@ -16,6 +16,24 @@ module.exports = {
         ignoreUrls: true,
         ignoreTemplateLiterals: true,
       }
-    ]
+    ],
+    quotes: [
+      "error",
+      "double",
+      {
+        allowTemplateLiterals: true,
+      },
+    ],
+    "comma-dangle": [
+      "error",
+      {
+        arrays: "always-multiline",
+        objects: "always-multiline",
+        imports: "always-multiline",
+        exports: "always-multiline",
+        functions: "never",
+      },
+    ],
+    "no-undef": "off"
   }
 };
