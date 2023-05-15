@@ -53,7 +53,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
           value: "local",
         },
         {
-          name: "Setup Vercel Postgres (TODO)",
+          name: "Setup Remote Postgres (Soon)",
           disabled: true,
         },
       ],
@@ -78,7 +78,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
         {
           type: "input",
           name: "postgresUsername",
-          message: "Enter your Postgres Username",
+          message: "Enter your Postgres username",
           default: "postgres",
           validate: (input) => {
             return typeof input === "string" && input.length > 0
@@ -87,7 +87,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
         {
           type: "password",
           name: "postgresPassword",
-          message: "Enter your Postgres Password",
+          message: "Enter your Postgres password",
         },
       ])
 
@@ -130,7 +130,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
     {
       type: "password",
       name: "adminPass",
-      message: "Enter your admin Password",
+      message: "Enter your admin password",
       validate: (input) => {
         return typeof input === "string" && input.length > 0
       },
