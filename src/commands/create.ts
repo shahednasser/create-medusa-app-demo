@@ -128,7 +128,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
       },
     },
     {
-      type: "password",
+      type: "input",
       name: "adminPass",
       message: "Enter your admin password",
       validate: (input) => {
