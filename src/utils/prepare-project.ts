@@ -14,6 +14,7 @@ type PrepareOptions = {
     email: string
     password: string
   }
+  seed?: boolean
   spinner?: Ora
 }
 
@@ -21,6 +22,7 @@ export default async ({
   directory,
   dbConnectionString,
   admin,
+  seed,
   spinner,
 }: PrepareOptions) => {
   // initialize execution options
@@ -92,6 +94,38 @@ export default async ({
 
     logMessage({
       message: `\n✓ Created admin user`,
+      type: "success",
+    })
+  }
+
+  if (seed) {
+    // check if a seed file exists in the project
+    if (!fs.existsSync(path.join(directory, "data", "seed.json"))) {
+      logMessage({
+        message: "Seed file was not found in the project. Skipping seeding...",
+        type: "warning",
+      })
+      return
+    }
+
+    if (spinner) {
+      spinner.text = chalk.white("Seeding database with demo data...")
+    }
+
+    await runProcess({
+      process: async () => {
+        await promiseExec(
+          `npx -y @medusajs/medusa-cli@latest seed --seed-file=${path.join(
+            "data",
+            "seed.json"
+          )}`,
+          execOptions
+        )
+      },
+    })
+
+    logMessage({
+      message: `\n✓ Seeded database with demo data`,
       type: "success",
     })
   }

@@ -3,7 +3,7 @@ import { program } from "commander"
 
 type LogOptions = {
   message: string
-  type?: "error" | "success" | "info"
+  type?: "error" | "success" | "info" | "warning"
 }
 
 export default ({ message, type = "info" }: LogOptions) => {
@@ -13,6 +13,9 @@ export default ({ message, type = "info" }: LogOptions) => {
       break
     case "success":
       console.log(chalk.green(message))
+      break
+    case "warning":
+      console.log(chalk.yellow(message))
       break
     case "error":
       program.error(chalk.bold.red(message))

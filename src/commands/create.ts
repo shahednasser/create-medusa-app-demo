@@ -24,7 +24,7 @@ type CreateOptions = {
   seed?: boolean
 }
 
-export default async ({ repoUrl = "" }: CreateOptions) => {
+export default async ({ repoUrl = "", seed }: CreateOptions) => {
   const { projectName, postgresType } = await inquirer.prompt([
     {
       type: "input",
@@ -120,7 +120,7 @@ export default async ({ repoUrl = "" }: CreateOptions) => {
       type: "input",
       name: "adminEmail",
       message: "Enter your admin email",
-      default: "admin@medusa-test.com",
+      default: !seed ? "admin@medusa-test.com" : undefined,
       validate: (input) => {
         return typeof input === "string" && input.length > 0 && isEmail(input)
           ? true
@@ -201,6 +201,7 @@ export default async ({ repoUrl = "" }: CreateOptions) => {
         email: adminEmail,
         password: adminPass,
       },
+      seed,
       spinner,
     })
   } catch (e) {
