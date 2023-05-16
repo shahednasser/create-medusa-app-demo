@@ -6,6 +6,8 @@ import promiseExec from "./promise-exec.js"
 import { EOL } from "os"
 import runProcess from "./run-process.js"
 import logMessage from "./log-message.js"
+import getFact from "./get-fact.js"
+import onProcessTerminated from "./on-process-terminated.js"
 
 type PrepareOptions = {
   directory: string
@@ -16,6 +18,13 @@ type PrepareOptions = {
   }
   seed?: boolean
   spinner?: Ora
+  abortController?: AbortController
+}
+
+const showFact = (lastFact: string, spinner: Ora): string => {
+  const fact = getFact(lastFact)
+  spinner.text = chalk.white(`Installing dependencies...(${fact})`)
+  return fact
 }
 
 export default async ({
@@ -24,10 +33,12 @@ export default async ({
   admin,
   seed,
   spinner,
+  abortController,
 }: PrepareOptions) => {
   // initialize execution options
   const execOptions = {
     cwd: directory,
+    signal: abortController?.signal,
   }
 
   // add connection string to project
@@ -36,8 +47,15 @@ export default async ({
     `DATABASE_TYPE=postgres${EOL}DATABASE_URL=${dbConnectionString}`
   )
 
+  let interval: NodeJS.Timer | undefined = undefined
+  let fact = ""
   if (spinner) {
-    spinner.text = chalk.white("Installing dependencies...")
+    fact = showFact(fact, spinner)
+    interval = setInterval(() => {
+      fact = showFact(fact, spinner)
+    }, 4000)
+
+    onProcessTerminated(() => clearInterval(interval))
   }
 
   await runProcess({
@@ -53,6 +71,9 @@ export default async ({
     ignoreERESOLVE: true,
   })
 
+  if (interval) {
+    clearInterval(interval)
+  }
   logMessage({
     message: `\n✓ Installed Dependencies`,
     type: "success",

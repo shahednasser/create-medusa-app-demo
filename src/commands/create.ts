@@ -15,6 +15,10 @@ import fs from "fs"
 import { nanoid } from "nanoid"
 import isEmailImported from "validator/lib/isEmail.js"
 import logMessage from "../utils/log-message.js"
+import onProcessTerminated from "../utils/on-process-terminated.js"
+import createAbortController, {
+  isAbortError,
+} from "../utils/create-abort-controller.js"
 
 const slugify = slugifyType.default
 const isEmail = isEmailImported.default
@@ -25,6 +29,8 @@ type CreateOptions = {
 }
 
 export default async ({ repoUrl = "", seed }: CreateOptions) => {
+  const abortController = createAbortController()
+
   const { projectName, postgresType } = await inquirer.prompt([
     {
       type: "input",
@@ -139,16 +145,20 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
 
   const spinner = ora(chalk.white("Setting up project")).start()
 
-  process.on("SIGTERM", () => spinner.stop())
-  process.on("SIGINT", () => spinner.stop())
+  onProcessTerminated(() => spinner.stop())
 
   // clone repository
   try {
     await cloneRepo({
       directoryName: projectName,
       repoUrl,
+      abortController,
     })
   } catch (e) {
+    if (isAbortError(e)) {
+      process.exit()
+    }
+
     logMessage({
       message: `An error occurred while setting up your project: ${e}`,
       type: "error",
@@ -203,8 +213,13 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
       },
       seed,
       spinner,
+      abortController,
     })
-  } catch (e) {
+  } catch (e: any) {
+    if (isAbortError(e)) {
+      process.exit()
+    }
+
     logMessage({
       message: `An error occurred while preparing project: ${e}`,
       type: "error",
@@ -228,8 +243,13 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
   try {
     startMedusa({
       directory: projectName,
+      abortController,
     })
   } catch (e) {
+    if (isAbortError(e)) {
+      process.exit()
+    }
+
     logMessage({
       message: `An error occurred while starting Medusa`,
       type: "error",
