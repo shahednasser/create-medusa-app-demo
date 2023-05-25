@@ -165,10 +165,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
     })
   }
 
-  logMessage({
-    message: `\n✓ Created project directory`,
-    type: "success",
-  })
+  spinner.succeed(chalk.green("Created project directory")).start()
 
   if (client) {
     spinner.text = chalk.white("Creating database...")
@@ -194,10 +191,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
       db: dbName,
     })
 
-    logMessage({
-      message: `\n✓ Database ${dbName} created`,
-      type: "success",
-    })
+    spinner.succeed(chalk.green(`Database ${dbName} created`)).start()
   }
 
   spinner.text = chalk.white("Preparing project...")
@@ -226,14 +220,10 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
     })
   }
 
-  logMessage({
-    message: "✓ Project Prepared",
-    type: "success",
-  })
+  spinner.succeed(chalk.green("Project Prepared"))
 
   // close db connection
   await client?.end()
-  spinner.stop()
 
   // start backend
   logMessage({

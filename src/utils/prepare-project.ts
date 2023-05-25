@@ -5,9 +5,9 @@ import { Ora } from "ora"
 import promiseExec from "./promise-exec.js"
 import { EOL } from "os"
 import runProcess from "./run-process.js"
-import logMessage from "./log-message.js"
 import getFact from "./get-fact.js"
 import onProcessTerminated from "./on-process-terminated.js"
+import boxen from "boxen"
 
 type PrepareOptions = {
   directory: string
@@ -23,7 +23,14 @@ type PrepareOptions = {
 
 const showFact = (lastFact: string, spinner: Ora): string => {
   const fact = getFact(lastFact)
-  spinner.text = chalk.white(`Installing dependencies...(${fact})`)
+  spinner.text = `${boxen(fact, {
+    title: chalk.cyan("Installing Dependencies..."),
+    titleAlignment: "center",
+    textAlignment: "center",
+    padding: 1,
+    margin: 1,
+    float: "center",
+  })}`
   return fact
 }
 
@@ -50,10 +57,13 @@ export default async ({
   let interval: NodeJS.Timer | undefined = undefined
   let fact = ""
   if (spinner) {
+    spinner.spinner = {
+      frames: [""],
+    }
     fact = showFact(fact, spinner)
     interval = setInterval(() => {
       fact = showFact(fact, spinner)
-    }, 4000)
+    }, 6000)
 
     onProcessTerminated(() => clearInterval(interval))
   }
@@ -74,13 +84,11 @@ export default async ({
   if (interval) {
     clearInterval(interval)
   }
-  logMessage({
-    message: `\n✓ Installed Dependencies`,
-    type: "success",
-  })
 
   if (spinner) {
-    spinner.text = chalk.white("Running Migrations...")
+    spinner.spinner = "dots"
+    spinner.succeed(chalk.green("Installed Dependencies"))
+    spinner.start(chalk.white("Running Migrations..."))
   }
 
   // run migrations
@@ -93,10 +101,7 @@ export default async ({
     },
   })
 
-  logMessage({
-    message: `\n✓ Ran Migrations`,
-    type: "success",
-  })
+  spinner?.succeed(chalk.green("Ran Migrations")).start()
 
   if (admin) {
     // create admin user
@@ -113,19 +118,23 @@ export default async ({
       },
     })
 
-    logMessage({
-      message: `\n✓ Created admin user`,
-      type: "success",
-    })
+    spinner?.succeed(chalk.green("Created admin user")).start()
   }
 
   if (seed) {
+    if (spinner) {
+      spinner.text = chalk.white("Seeding database...")
+    }
+
     // check if a seed file exists in the project
-    if (!fs.existsSync(path.join(directory, "data", "seed.json"))) {
-      logMessage({
-        message: "Seed file was not found in the project. Skipping seeding...",
-        type: "warning",
-      })
+    if (!fs.existsSync(path.join(directory, "data", "seed.jsons"))) {
+      spinner
+        ?.warn(
+          chalk.yellow(
+            "Seed file was not found in the project. Skipping seeding..."
+          )
+        )
+        .start()
       return
     }
 
@@ -145,9 +154,6 @@ export default async ({
       },
     })
 
-    logMessage({
-      message: `\n✓ Seeded database with demo data`,
-      type: "success",
-    })
+    spinner?.succeed(chalk.green("Seeded database with demo data")).start()
   }
 }
