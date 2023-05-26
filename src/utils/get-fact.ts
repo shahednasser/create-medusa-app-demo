@@ -1,7 +1,7 @@
 const facts = [
   "Plugins allow you to integrate third-party services for payment, fulfillment, notifications, and more.",
   "You can specify a product's availability in one or more sales channels.",
-  "Payment and shipping settings are configured per region.",
+  "Payment and shipping options and providers can be configured per region.",
   "Tax-inclusive pricing allows you to set prices for products, shipping options, and more without having to worry about calculating taxes.",
   "Medusa provides multi-currency and region support, with full control over prices for each currency and region.",
   "You can organize customers by customer groups and set special prices for them.",
