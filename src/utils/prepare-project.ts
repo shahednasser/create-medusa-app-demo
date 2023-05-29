@@ -14,7 +14,6 @@ type PrepareOptions = {
   dbConnectionString: string
   admin?: {
     email: string
-    password: string
   }
   seed?: boolean
   spinner?: Ora
@@ -47,6 +46,9 @@ export default async ({
     cwd: directory,
     signal: abortController?.signal,
   }
+
+  // initialize the invite token to return
+  let inviteToken: string | undefined = undefined
 
   // add connection string to project
   fs.appendFileSync(
@@ -111,10 +113,13 @@ export default async ({
 
     await runProcess({
       process: async () => {
-        await promiseExec(
-          `npx -y @medusajs/medusa-cli@latest user -e ${admin.email} -p ${admin.password}`,
+        const proc = await promiseExec(
+          `npx -y @medusajs/medusa-cli@1.3.15-snapshot-20230529090917 user -e ${admin.email} --invite`,
           execOptions
         )
+        // get invite token from stdout
+        const match = proc.stdout.match(/Invite token: (?<token>.+)/)
+        inviteToken = match?.groups?.token
       },
     })
 
@@ -156,4 +161,6 @@ export default async ({
 
     spinner?.succeed(chalk.green("Seeded database with demo data")).start()
   }
+
+  return inviteToken
 }

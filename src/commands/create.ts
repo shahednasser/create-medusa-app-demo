@@ -121,7 +121,7 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
       "Create an admin user to access the admin dashboard after the setup is complete.",
   })
 
-  const { adminEmail, adminPass } = await inquirer.prompt([
+  const { adminEmail } = await inquirer.prompt([
     {
       type: "input",
       name: "adminEmail",
@@ -131,14 +131,6 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
         return typeof input === "string" && input.length > 0 && isEmail(input)
           ? true
           : "Please enter a valid email"
-      },
-    },
-    {
-      type: "input",
-      name: "adminPass",
-      message: "Enter your admin password",
-      validate: (input) => {
-        return typeof input === "string" && input.length > 0
       },
     },
   ])
@@ -197,13 +189,13 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
   spinner.text = chalk.white("Preparing project...")
 
   // prepare project
+  let inviteToken: string | undefined = undefined
   try {
-    await prepareProject({
+    inviteToken = await prepareProject({
       directory: projectName,
       dbConnectionString,
       admin: {
         email: adminEmail,
-        password: adminPass,
       },
       seed,
       spinner,
@@ -248,5 +240,11 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
 
   waitOn({
     resources: ["http://localhost:9000/health"],
-  }).then(() => open("http://localhost:9000/app"))
+  }).then(() =>
+    open(
+      inviteToken
+        ? `http://localhost:9000/app/invite?token=${inviteToken}`
+        : "http://localhost:9000/app"
+    )
+  )
 }
