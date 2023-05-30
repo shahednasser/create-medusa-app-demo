@@ -31,7 +31,7 @@ type CreateOptions = {
 export default async ({ repoUrl = "", seed }: CreateOptions) => {
   const abortController = createAbortController()
 
-  const { projectName, postgresType } = await inquirer.prompt([
+  const { projectName } = await inquirer.prompt([
     {
       type: "input",
       name: "projectName",
@@ -49,21 +49,6 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
           : true
       },
     },
-    {
-      type: "list",
-      name: "postgresType",
-      message: "Do you want to use a local or remote database?",
-      choices: [
-        {
-          name: "Local (Requires Postgres to be installed)",
-          value: "local",
-        },
-        {
-          name: "Setup Remote Postgres (Soon)",
-          disabled: true,
-        },
-      ],
-    },
   ])
 
   let client: pg.Client | undefined
@@ -71,61 +56,54 @@ export default async ({ repoUrl = "", seed }: CreateOptions) => {
   let postgresUsername = "postgres"
   let postgresPassword = ""
 
-  if (postgresType === "local") {
-    // try to log in with default db username and password
+  // try to log in with default db username and password
+  try {
+    client = await postgresClient({
+      user: postgresUsername,
+      password: postgresPassword,
+    })
+  } catch (e) {
+    // ask for the user's credentials
+    const answers = await inquirer.prompt([
+      {
+        type: "input",
+        name: "postgresUsername",
+        message: "Enter your Postgres username",
+        default: "postgres",
+        validate: (input) => {
+          return typeof input === "string" && input.length > 0
+        },
+      },
+      {
+        type: "password",
+        name: "postgresPassword",
+        message: "Enter your Postgres password",
+      },
+    ])
+
+    postgresUsername = answers.postgresUsername
+    postgresPassword = answers.postgresPassword
+
     try {
       client = await postgresClient({
         user: postgresUsername,
         password: postgresPassword,
       })
     } catch (e) {
-      // ask for the user's credentials
-      const answers = await inquirer.prompt([
-        {
-          type: "input",
-          name: "postgresUsername",
-          message: "Enter your Postgres username",
-          default: "postgres",
-          validate: (input) => {
-            return typeof input === "string" && input.length > 0
-          },
-        },
-        {
-          type: "password",
-          name: "postgresPassword",
-          message: "Enter your Postgres password",
-        },
-      ])
-
-      postgresUsername = answers.postgresUsername
-      postgresPassword = answers.postgresPassword
-
-      try {
-        client = await postgresClient({
-          user: postgresUsername,
-          password: postgresPassword,
-        })
-      } catch (e) {
-        logMessage({
-          message:
-            "Couldn't connect to PostgreSQL. Make sure you have PostgreSQL installed and the credentials you provided are correct.\n\n" +
-            "You can learn how to install PostgreSQL here: https://docs.medusajs.com/development/backend/prepare-environment#postgresql",
-          type: "error",
-        })
-      }
+      logMessage({
+        message:
+          "Couldn't connect to PostgreSQL. Make sure you have PostgreSQL installed and the credentials you provided are correct.\n\n" +
+          "You can learn how to install PostgreSQL here: https://docs.medusajs.com/development/backend/prepare-environment#postgresql",
+        type: "error",
+      })
     }
   }
-
-  logMessage({
-    message:
-      "Create an admin user to access the admin dashboard after the setup is complete.",
-  })
 
   const { adminEmail } = await inquirer.prompt([
     {
       type: "input",
       name: "adminEmail",
-      message: "Enter your admin email",
+      message: "Enter an email for your admin dashboard user",
       default: !seed ? "admin@medusa-test.com" : undefined,
       validate: (input) => {
         return typeof input === "string" && input.length > 0 && isEmail(input)
