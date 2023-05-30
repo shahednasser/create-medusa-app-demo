@@ -7,7 +7,7 @@ type CloneRepoOptions = {
 }
 
 const DEFAULT_REPO =
-  "https://github.com/shahednasser/medusa-starter-default.git"
+  "https://github.com/medusajs/medusa-starter-default -b feat/onboarding"
 
 export default async ({
   directoryName = "",
